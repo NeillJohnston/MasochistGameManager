@@ -2,9 +2,15 @@ name: MasochistGameManager
 main: io.github.NeillJohnston.MasochistGameManager.MasochistGameManager
 version: 0.0
 author: Neill Johnston
+load: startup
 commands:
   dingo:
     description: Test, again.
     usage: /dingo
     permission: MasochistGameManager.dingo
     permission-message: Nope!
+  map:
+    description: Switch map.
+    usage: /map [name]
+    permission: MasochistGameManager.map
+    permission-message: You don't have permission.
