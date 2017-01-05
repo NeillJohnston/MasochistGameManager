@@ -1,0 +1,10 @@
+name: MasochistGameManager
+main: io.github.NeillJohnston.MasochistGameManager.MasochistGameManager
+version: 0.0
+author: Neill Johnston
+commands:
+  dingo:
+    description: Test, again.
+    usage: /dingo
+    permission: MasochistGameManager.dingo
+    permission-message: Nope!
