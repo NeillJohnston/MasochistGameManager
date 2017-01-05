@@ -26,6 +26,7 @@ import java.util.Map;
  */
 public class MapExecutor implements CommandExecutor {
 
+    // Constants
     public final static String WORLD = "world_course";
 
     private final MasochistGameManager plugin;
@@ -33,7 +34,7 @@ public class MapExecutor implements CommandExecutor {
     /**
      * Construct the MapExecutor command.
      *
-     * @param plugin    The Bukkit plugin instance.
+     * @param plugin    The Bukkit plugin instance
      */
     public MapExecutor(MasochistGameManager plugin) {
 
@@ -42,30 +43,32 @@ public class MapExecutor implements CommandExecutor {
     }
 
     /**
-     *
+     * Handle execution of /map.
      *
      * @param commandSender Who sent the command
      * @param command       The command itself
      * @param s             -
      * @param strings       Argument array
-     * @return True if the command executed correctly
+     * @return True if the map is loaded without error
      */
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
 
         if(strings.length >= 1) {
 
-            // TP all players to the lobby.
+            // TP all players to the lobby
             for(Player p : Bukkit.getServer().getOnlinePlayers())
                 p.teleport(Bukkit.getServer().getWorld("world").getSpawnLocation());
 
-            // Create a temp world, unload it immediately.
+            // Create a temp world, unload it immediately - this is done solely to get a usable World object
             World world = new WorldCreator(WORLD).createWorld();
             plugin.getServer().unloadWorld(world, false);
 
-            // Load the world with a MapLoader.
+            // Load the world with a MapLoader
             MapLoader mapLoader = new MapLoader(strings[0]);
             mapLoader.loadMap();
+
+            return true;
 
         }
 
@@ -76,25 +79,28 @@ public class MapExecutor implements CommandExecutor {
 }
 
 /**
- * Convenience class to load a map
+ * Convenience class to load a map.
  */
 class MapLoader {
 
-    private File sourcePath, targetPath, sourceYml;
-    private MapYml mapYml;
+    private final File sourcePath, targetPath, sourceYml;
+    private final MapYml mapYml;
 
     MapLoader(String name) {
 
-        // Create the from- and to- paths for the world.
+        // Create the from- and to- paths for the world
         sourcePath = new File(".\\maps\\" + name);
         targetPath = new File(".\\" + MapExecutor.WORLD);
+        sourceYml = new File(".\\maps\\" + name + "\\map.yml");
         mapYml = new MapYml();
 
         // Load map options from map.yml
         try {
 
-            sourceYml = new File(".\\maps\\" + name + "\\map.yml");
+            // Turn the YAML file into a hashmap with String-Object pairs
             HashMap<String, Object> ymlHashMap = (HashMap<String, Object>) new Yaml().load(new FileInputStream(sourceYml));
+
+            // Place settings in mapYml
             mapYml.author = (String) ymlHashMap.get("author");
             mapYml.name = (String) ymlHashMap.get("name");
             mapYml.x = (Double) ymlHashMap.get("x");
@@ -106,7 +112,7 @@ class MapLoader {
     }
 
     /**
-     * Load the new map and TP all online players to it
+     * Load the new map and TP all online players to it.
      *
      * @return True if the map was successfully copied, false otherwise
      */
@@ -114,11 +120,11 @@ class MapLoader {
 
         try {
 
-            // Copy.
+            // Copy
             FileUtils.copyDirectory(sourcePath, targetPath);
             Bukkit.getLogger().info("Copied world.");
 
-            // Re-load the temp world, now from the new files.
+            // Re-load the temp world, now from the new files
             World w = Bukkit.getServer().createWorld(new WorldCreator(MapExecutor.WORLD));
             for(Player p : Bukkit.getServer().getOnlinePlayers())
                 p.teleport(new Location(w, mapYml.x, mapYml.y, mapYml.z));

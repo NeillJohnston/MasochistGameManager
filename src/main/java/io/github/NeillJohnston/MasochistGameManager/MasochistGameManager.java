@@ -21,18 +21,19 @@ public class MasochistGameManager extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        getLogger().info("Enables MGM!");
+        getLogger().info(":D Enabled MasochistGameManager!");
 
         // Add command executors.
         this.getCommand("dingo").setExecutor(new DingoExecutor(this));
         this.getCommand("map").setExecutor(new MapExecutor(this));
+        this.getCommand("maplist").setExecutor(new MaplistExecutor(this));
 
     }
 
     @Override
     public void onDisable() {
 
-        getLogger().info("Disabled MGM!");
+        getLogger().info("D: Disabled MasochistGameManager!");
 
     }
 

@@ -14,3 +14,8 @@ commands:
     usage: /map [name]
     permission: MasochistGameManager.map
     permission-message: You don't have permission.
+  maplist:
+    description: List available maps.
+    usage: /maplist
+    permission: MasochistGameManager.map
+    permission-message: You don't have permission.
