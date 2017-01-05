@@ -1,0 +1,2 @@
+# MasochistGameManager
+Masochistic PGM cloneroni.
