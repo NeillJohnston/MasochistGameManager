@@ -124,10 +124,11 @@ class MapLoader {
             FileUtils.copyDirectory(sourcePath, targetPath);
             Bukkit.getLogger().info("Copied world.");
 
-            // Re-load the temp world, now from the new files
+            // Re-load the temp world, now from the new files - also set world spawn
             World w = Bukkit.getServer().createWorld(new WorldCreator(MapExecutor.WORLD));
+            MasochistGameManager.spawn = new Location(w, mapYml.x, mapYml.y, mapYml.z);
             for(Player p : Bukkit.getServer().getOnlinePlayers())
-                p.teleport(new Location(w, mapYml.x, mapYml.y, mapYml.z));
+                p.teleport(MasochistGameManager.spawn);
 
             return true;
 

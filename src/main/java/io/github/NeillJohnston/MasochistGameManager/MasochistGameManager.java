@@ -1,27 +1,38 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 /**
  * :D --> D:
  *
  * @author Neill Johnston
  */
-public class MasochistGameManager extends JavaPlugin {
-    private static long worldId;
+public class MasochistGameManager extends JavaPlugin implements Listener {
+
+    public static Location spawn = null;
 
     @Override
     public void onEnable() {
 
-        getLogger().info(":D Enabled MasochistGameManager!");
+        getLogger().info("Enabled MasochistGameManager.");
+
+        // Register event listening.
+        getServer().getPluginManager().registerEvents(this, this);
 
         // Add command executors.
         this.getCommand("dingo").setExecutor(new DingoExecutor(this));
@@ -30,26 +41,49 @@ public class MasochistGameManager extends JavaPlugin {
 
     }
 
-    @Override
-    public void onDisable() {
-
-        getLogger().info("D: Disabled MasochistGameManager!");
-
-    }
-
-    // Generate a world id.
-    public long nextWorldId() {
-
-        worldId++;
-        return worldId;
-
-    }
-
-    // Make the default world gen a blank chunk generator.
+    /**
+     * TODO This shit is NOT working.
+     *
+     * @param worldName
+     * @param id
+     * @return
+     */
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
 
         return new BlankChunkGenerator();
+
+    }
+
+    /**
+     * When a player joins, put them at either the lobby spawn (default) or the spawn of the current map.
+     *
+     * @param event
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onJoin(PlayerJoinEvent event) {
+
+        // Get the player and TP to 0,0 at the lobby.
+        final Player p = event.getPlayer();
+
+        if(spawn == null)
+            p.teleport(new Location(Bukkit.getServer().getWorld("world"), 0.5, 4.0, 0.5));
+        else
+            p.teleport(spawn);
+        p.setVelocity(new Vector(0, 0, 0));
+        p.getInventory().clear();
+
+    }
+
+    /**
+     * Once the world loads, set the correct spawn.
+     *
+     * @param event
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onWorldLoad(WorldLoadEvent event) {
+
+        spawn = new Location(Bukkit.getServer().getWorld("world"), 0.5, 4.0, 0.5);
 
     }
 
