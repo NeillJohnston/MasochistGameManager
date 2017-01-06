@@ -83,6 +83,16 @@ public class MapExecutor implements CommandExecutor {
  */
 class MapLoader {
 
+    /**
+     * Default commands to execute when loading a map
+     */
+    public final static String[] LOAD_COMMANDS = {
+            "gamerule doMobSpawning false",
+            "difficulty 0",
+            "gamerule doDaylightCycle false",
+            "time set 6000",
+    };
+
     private final File sourcePath, targetPath, sourceYml;
     private final MapYml mapYml;
 
@@ -129,6 +139,11 @@ class MapLoader {
             MasochistGameManager.spawn = new Location(w, mapYml.x, mapYml.y, mapYml.z);
             for(Player p : Bukkit.getServer().getOnlinePlayers())
                 p.teleport(MasochistGameManager.spawn);
+
+            // Set default world settings/gamerules
+            for(String s : LOAD_COMMANDS)
+                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), s);
+
 
             return true;
 
