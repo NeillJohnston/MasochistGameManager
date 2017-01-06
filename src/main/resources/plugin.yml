@@ -2,6 +2,7 @@ name: MasochistGameManager
 main: io.github.NeillJohnston.MasochistGameManager.MasochistGameManager
 version: 0.0
 author: Neill Johnston
+description: Masochist PGM clonerino.
 load: startup
 commands:
   dingo:

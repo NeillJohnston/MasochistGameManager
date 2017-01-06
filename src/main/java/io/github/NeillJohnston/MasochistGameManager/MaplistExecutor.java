@@ -1,13 +1,11 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 
 /**

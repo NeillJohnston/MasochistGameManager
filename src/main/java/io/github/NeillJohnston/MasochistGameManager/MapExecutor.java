@@ -1,23 +1,20 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
+import io.github.NeillJohnston.MasochistGameManager.gamemode.Parkour;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.WorldCreator;
-import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * /map [name] command: Switch the server map to the specified map
@@ -76,91 +73,68 @@ public class MapExecutor implements CommandExecutor {
 
     }
 
-}
-
-/**
- * Convenience class to load a map.
- */
-class MapLoader {
-
     /**
-     * Default commands to execute when loading a map
+     * Convenience class to load a map.
      */
-    public final static String[] LOAD_COMMANDS = {
-            "gamerule doMobSpawning false",
-            "difficulty 0",
-            "gamerule doDaylightCycle false",
-            "time set 6000",
-    };
+    class MapLoader {
 
-    private final File sourcePath, targetPath, sourceYml;
-    private final MapYml mapYml;
+        private final File sourcePath, targetPath, sourceYml;
+        private MapYml mapYml;
 
-    MapLoader(String name) {
+        MapLoader(String name) {
 
-        // Create the from- and to- paths for the world
-        sourcePath = new File(".\\maps\\" + name);
-        targetPath = new File(".\\" + MapExecutor.WORLD);
-        sourceYml = new File(".\\maps\\" + name + "\\map.yml");
-        mapYml = new MapYml();
+            // Create the from- and to- paths for the world
+            sourcePath = new File(".\\maps\\" + name);
+            targetPath = new File(".\\" + MapExecutor.WORLD);
+            sourceYml = new File(".\\maps\\" + name + "\\map.yml");
 
-        // Load map options from map.yml
-        try {
+            // Load map options from map.yml
+            try {
 
-            // Turn the YAML file into a hashmap with String-Object pairs
-            HashMap<String, Object> ymlHashMap = (HashMap<String, Object>) new Yaml().load(new FileInputStream(sourceYml));
+                // Turn the YAML file into a MapYml object
+                mapYml = new MapYml((HashMap<String, Object>) new Yaml().load(new FileInputStream(sourceYml)));
 
-            // Place settings in mapYml
-            mapYml.author = (String) ymlHashMap.get("author");
-            mapYml.name = (String) ymlHashMap.get("name");
-            mapYml.x = (Double) ymlHashMap.get("x");
-            mapYml.y = (Double) ymlHashMap.get("y");
-            mapYml.z = (Double) ymlHashMap.get("z");
+            } catch(FileNotFoundException e) {
+                Bukkit.getLogger().info("Map does not have a map.yml!");
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
 
-        } catch(FileNotFoundException e) { Bukkit.getLogger().info("Map does not have a map.yml!"); }
+        }
 
-    }
+        /**
+         * Load the new map and TP all online players to it.
+         *
+         * @return True if the map was successfully copied, false otherwise
+         */
+        boolean loadMap() {
 
-    /**
-     * Load the new map and TP all online players to it.
-     *
-     * @return True if the map was successfully copied, false otherwise
-     */
-    boolean loadMap() {
+            try {
 
-        try {
+                // Copy
+                FileUtils.copyDirectory(sourcePath, targetPath);
+                Bukkit.getLogger().info("Copied world.");
 
-            // Copy
-            FileUtils.copyDirectory(sourcePath, targetPath);
-            Bukkit.getLogger().info("Copied world.");
+                // Re-load the temp world, now from the new files - also set world spawn
+                World w = Bukkit.getServer().createWorld(new WorldCreator(MapExecutor.WORLD));
+                MasochistGameManager.spawn = new Location(w, mapYml.x, mapYml.y, mapYml.z);
+                for (Player p : Bukkit.getServer().getOnlinePlayers())
+                    p.teleport(MasochistGameManager.spawn);
 
-            // Re-load the temp world, now from the new files - also set world spawn
-            World w = Bukkit.getServer().createWorld(new WorldCreator(MapExecutor.WORLD));
-            MasochistGameManager.spawn = new Location(w, mapYml.x, mapYml.y, mapYml.z);
-            for(Player p : Bukkit.getServer().getOnlinePlayers())
-                p.teleport(MasochistGameManager.spawn);
+                Parkour parkour = new Parkour(plugin, w, mapYml);
+                Bukkit.getServer().getPluginManager().registerEvents(parkour, plugin);
 
-            // Set default world settings/gamerules
-            for(String s : LOAD_COMMANDS)
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), s);
+                return true;
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
 
-            return true;
+            return false;
 
-        } catch(IOException e) { e.printStackTrace(); }
-
-        return false;
-
-    }
-
-    /**
-     * Helper class to hold map settings.
-     */
-    private class MapYml {
-
-        public String name;
-        public String author;
-        public double x, y, z;
+        }
 
     }
 
