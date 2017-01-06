@@ -116,15 +116,23 @@ public class MapExecutor implements CommandExecutor {
                 Bukkit.getLogger().info("Copied world.");
 
                 // Re-load the temp world, now from the new files - also set world spawn
-                World w = Bukkit.getServer().createWorld(new WorldCreator(MapExecutor.WORLD));
-                MasochistGameManager.spawn = new Location(w, mapYml.x, mapYml.y, mapYml.z);
+                World world = Bukkit.getServer().createWorld(new WorldCreator(MapExecutor.WORLD));
+                MasochistGameManager.spawn = MasochistGameManager.locationFromCoords(world, mapYml.spawn);
                 for (Player p : Bukkit.getServer().getOnlinePlayers())
                     p.teleport(MasochistGameManager.spawn);
 
-                Parkour parkour = new Parkour(plugin, w, mapYml);
-                Bukkit.getServer().getPluginManager().registerEvents(parkour, plugin);
+                try {
 
-                return true;
+                    Parkour parkour = new Parkour(plugin, world, mapYml);
+                    Bukkit.getServer().getPluginManager().registerEvents(parkour, plugin);
+                    parkour.start();
+
+                    return true;
+
+                } catch(NullPointerException e) {
+                    Bukkit.getLogger().info("map.yml may be missing something");
+                    e.printStackTrace();
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();

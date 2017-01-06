@@ -1,5 +1,8 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
+import org.bukkit.Location;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -16,20 +19,22 @@ public class MapYml {
     public static final String GAMEMODE_PKR = "pkr";
     public static final String GAMEMODE_PDM = "pdm";
 
+    private final HashMap<String, Object> mapYml;
+
     // Basic universal settings
     public final String name;
     public final String author;
-    public final double x, y, z;
+    public final double[] spawn;
     public final String gamemode;
 
     /**
      * Pkr-specific settings
      *
-     * start(x/y/z): block coordinates of the start button
+     * startButton: double[] of the start buttons's block coordinates
      * end(x/y/z): block coordinates of the end button
      */
-    public final double startx, starty, startz;
-    public final double endx, endy, endz;
+    public final double[] startButton;
+    public final double[] endButton;
 
     /**
      * Generate the MapYml object from a Yaml hashmap.
@@ -38,21 +43,34 @@ public class MapYml {
      */
     public MapYml(HashMap<String, Object> mapYml) {
 
+        this.mapYml = mapYml;
+
         // Basic universal settings
         author = (String) mapYml.get("author");
         name = (String) mapYml.get("name");
-        x = (Double) mapYml.get("x");
-        y = (Double) mapYml.get("y");
-        z = (Double) mapYml.get("z");
+        spawn = coordinates("spawn");
         gamemode = (String) mapYml.get("gamemode");
 
         // Pkr-specific settings
-        startx = (Double) mapYml.get("startx");
-        starty = (Double) mapYml.get("starty");
-        startz = (Double) mapYml.get("startz");
-        endx = (Double) mapYml.get("endx");
-        endy = (Double) mapYml.get("endy");
-        endz = (Double) mapYml.get("endz");
+        startButton = coordinates("start_button");
+        endButton = coordinates("end_button");
+
+    }
+
+    /**
+     * Convenience method to get coordinates (double array) from the three-item ArrayList
+     * that SnakeYaml will generate.
+     *
+     * @param id    The name of the coordinate array in map.yml
+     */
+    private double[] coordinates(String id) {
+
+        ArrayList<Double> coordsMapYml = (ArrayList<Double>) mapYml.get(id);
+        double[] coords = new double[coordsMapYml.size()];
+        for(int i = 0; i < coordsMapYml.size(); i++)
+            coords[i] = (double) coordsMapYml.get(i);
+
+        return coords;
 
     }
 

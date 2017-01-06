@@ -2,6 +2,7 @@ package io.github.NeillJohnston.MasochistGameManager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -90,6 +91,18 @@ public class MasochistGameManager extends JavaPlugin implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
 
         event.setRespawnLocation(spawn);
+
+    }
+
+    /**
+     * Convenience method, creates a location from a world and double[3].
+     *
+     * @param world     World to use
+     * @param coords    Coordinates of the new location
+     */
+    public static Location locationFromCoords(World world, double[] coords) {
+
+        return new Location(world, coords[0], coords[1], coords[2]);
 
     }
 

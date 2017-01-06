@@ -2,6 +2,7 @@ package io.github.NeillJohnston.MasochistGameManager.gamemode;
 
 import io.github.NeillJohnston.MasochistGameManager.MapYml;
 import io.github.NeillJohnston.MasochistGameManager.MasochistGameManager;
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,14 +36,14 @@ public class Parkour implements Gamemode {
     private final Location startButton;
     private final Location endButton;
 
-    public Parkour(MasochistGameManager plugin, World world, MapYml mapYml) {
+    public Parkour(MasochistGameManager plugin, World world, MapYml mapYml) throws NullPointerException {
 
         this.plugin = plugin;
         this.world = world;
         this.mapYml = mapYml;
 
-        startButton = new Location(world, mapYml.startx, mapYml.starty, mapYml.startz);
-        endButton = new Location(world, mapYml.endx, mapYml.endy, mapYml.endz);
+        startButton = MasochistGameManager.locationFromCoords(world, mapYml.startButton);
+        endButton = MasochistGameManager.locationFromCoords(world, mapYml.endButton);
 
     }
 
