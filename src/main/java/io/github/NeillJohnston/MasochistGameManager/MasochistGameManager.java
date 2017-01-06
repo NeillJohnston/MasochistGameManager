@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.EventExecutor;
@@ -85,18 +84,6 @@ public class MasochistGameManager extends JavaPlugin implements Listener {
     public void onWorldLoad(WorldLoadEvent event) {
 
         spawn = new Location(Bukkit.getServer().getWorld("world"), 0.5, 4.0, 0.5);
-
-    }
-
-    /**
-     * On player respawn, respawn at the spawn.
-     *
-     * @param event
-     */
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-
-        event.setRespawnLocation(spawn);
 
     }
 
