@@ -123,9 +123,20 @@ public class MapExecutor implements CommandExecutor {
 
                 try {
 
-                    Parkour parkour = new Parkour(plugin, world, mapYml);
-                    Bukkit.getServer().getPluginManager().registerEvents(parkour, plugin);
-                    parkour.start();
+                    // Create a game manager based on the game type
+                    switch(mapYml.gamemode) {
+
+                        case MapYml.GAMEMODE_PKR:
+                            Parkour parkour = new Parkour(plugin, world, mapYml);
+                            Bukkit.getServer().getPluginManager().registerEvents(parkour, plugin);
+                            parkour.start();
+                            break;
+
+                        case MapYml.GAMEMODE_PDM:
+                            // Create a PDM gamemode object, etc.
+                            break;
+
+                    }
 
                     return true;
 
