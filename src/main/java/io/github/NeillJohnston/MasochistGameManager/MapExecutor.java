@@ -1,5 +1,6 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
+import io.github.NeillJohnston.MasochistGameManager.gamemode.Gamemode;
 import io.github.NeillJohnston.MasochistGameManager.gamemode.Parkour;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
@@ -123,20 +124,30 @@ public class MapExecutor implements CommandExecutor {
 
                 try {
 
-                    // Create a game manager based on the game type
+                    // Create a Gamemode based on the game type
+                    Gamemode gamemode = null;
                     switch(mapYml.gamemode) {
 
                         case MapYml.GAMEMODE_PKR:
-                            Parkour parkour = new Parkour(plugin, world, mapYml);
-                            Bukkit.getServer().getPluginManager().registerEvents(parkour, plugin);
-                            parkour.start();
+                            gamemode = new Parkour(plugin, world, mapYml);
                             break;
 
                         case MapYml.GAMEMODE_PDM:
-                            // Create a PDM gamemode object, etc.
+                            // Create a PDM gamemode object, doesn't exist yet
+                            break;
+
+                        default:
+                            gamemode = new Parkour(plugin, world, mapYml);
                             break;
 
                     }
+
+                    if(gamemode == null)
+                        gamemode = new Parkour(plugin, world, mapYml);
+
+                    // Register and start the Gamemode
+                    Bukkit.getServer().getPluginManager().registerEvents(gamemode, plugin);
+                    gamemode.start();
 
                     return true;
 
@@ -146,8 +157,6 @@ public class MapExecutor implements CommandExecutor {
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch(Exception e) {
                 e.printStackTrace();
             }
 

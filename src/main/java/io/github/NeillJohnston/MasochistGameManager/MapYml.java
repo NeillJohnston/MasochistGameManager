@@ -1,6 +1,7 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +34,8 @@ public class MapYml {
      * startButton: double[] of the start buttons's block coordinates
      * end(x/y/z): block coordinates of the end button
      */
-    public final double[] startButton;
-    public final double[] endButton;
+    public final double[] startButton, endButton;
+    public final Material checkpointMat, backpointMat;
 
     /**
      * Generate the MapYml object from a Yaml hashmap.
@@ -54,6 +55,12 @@ public class MapYml {
         // Pkr-specific settings
         startButton = coordinates("start_button");
         endButton = coordinates("end_button");
+        // If a mat_checkpoint exists, assign it - otherwise default to diamond block
+        checkpointMat = (mapYml.get("mat_checkpoint") != null) ?
+                Material.getMaterial((String) mapYml.get("mat_checkpoint")) : Material.DIAMOND_BLOCK;
+        // If a mat_backpoint exists, assign it - otherwise default to bedrock
+        backpointMat = (mapYml.get("mat_backpoint") != null) ?
+                Material.getMaterial((String) mapYml.get("mat_backpoint")) : Material.BEDROCK;
 
     }
 
