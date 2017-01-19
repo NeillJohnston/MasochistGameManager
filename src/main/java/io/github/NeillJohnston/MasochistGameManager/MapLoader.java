@@ -8,6 +8,7 @@ import io.github.NeillJohnston.MasochistGameManager.gamemode.Gamemode;
 import io.github.NeillJohnston.MasochistGameManager.gamemode.Parkour;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
@@ -26,19 +27,27 @@ import static io.github.NeillJohnston.MasochistGameManager.MapExecutor.WORLD_PRE
 class MapLoader {
 
     private final MasochistGameManager plugin;
-    private String name;
+    private String name, id;
 
     private File sourcePath, targetPath, sourceYml;
     private MapYml mapYml;
 
-    MapLoader(MasochistGameManager plugin, String name) {
+    /**
+     * Construct a MapLoader.
+     *
+     * @param plugin    Instance of the Bukkit plugin
+     * @param name      World name (in /maps)
+     * @param id        World id
+     */
+    MapLoader(MasochistGameManager plugin, String name, String id) {
 
         this.plugin = plugin;
         this.name = name;
+        this.id = WORLD_PREFIX + id;
 
         // Create the from- and to- paths for the world
         sourcePath = new File(MAPS_PATH + "\\" + name);
-        targetPath = new File(".\\" + WORLD_PREFIX);
+        targetPath = new File(".\\" + this.id);
         sourceYml = new File(MAPS_PATH + "\\" + name + "\\map.yml");
 
         // Load map options from map.yml
@@ -68,56 +77,50 @@ class MapLoader {
             for(Player p : Bukkit.getServer().getOnlinePlayers())
                 p.teleport(Bukkit.getServer().getWorld(LOBBY_WORLD).getSpawnLocation());
 
-            // Create a temp world, unload it immediately - this is done solely to get a usable World object
-            plugin.getServer().unloadWorld(new WorldCreator(name).createWorld(), false);
-
-            // Copy
+            // Copy world files over
             FileUtils.copyDirectory(sourcePath, targetPath);
             Bukkit.getLogger().info("Copied world.");
 
+            // Create a temp world, unload it immediately - this is done solely to get a usable World object
+            World temp = new WorldCreator(id).createWorld();
+            Bukkit.getServer().unloadWorld(temp, false);
+
             // Re-load the temp world, now from the new files - also set world spawn
-            World world = Bukkit.getServer().createWorld(new WorldCreator(name));
+            World world = Bukkit.getServer().createWorld(new WorldCreator(id));
             MasochistGameManager.spawn = MasochistGameManager.locationFromCoords(world, mapYml.spawn);
             for (Player p : Bukkit.getServer().getOnlinePlayers())
                 p.teleport(MasochistGameManager.spawn);
 
-            try {
+            // Create a Gamemode based on the gamemode in map.yml
+            Gamemode gamemode = null;
+            switch(mapYml.gamemode) {
 
-                // Create a Gamemode based on the game type
-                Gamemode gamemode = null;
-                switch(mapYml.gamemode) {
-
-                    case MapYml.GAMEMODE_PKR:
-                        gamemode = new Parkour(plugin, world, mapYml);
-                        break;
-
-                    case MapYml.GAMEMODE_PDM:
-                        // Should create a PDM gamemode object, doesn't exist yet
-                        break;
-
-                    default:
-                        gamemode = new Parkour(plugin, world, mapYml);
-                        break;
-
-                }
-
-                if(gamemode == null)
+                case MapYml.GAMEMODE_PKR:
                     gamemode = new Parkour(plugin, world, mapYml);
+                    break;
 
-                // Register and start the Gamemode
-                Bukkit.getServer().getPluginManager().registerEvents(gamemode, plugin);
-                gamemode.start();
+                case MapYml.GAMEMODE_PDM:
+                    gamemode = new Parkour(plugin, world, mapYml);
+                    break;
 
-                return true;
+                default:
+                    gamemode = new Parkour(plugin, world, mapYml);
+                    break;
 
-            } catch(NullPointerException e) {
-                Bukkit.getLogger().info("map.yml may be missing something");
-                e.printStackTrace();
             }
 
+            // Register and start the Gamemode
+            Bukkit.getServer().getPluginManager().registerEvents(gamemode, plugin);
+            gamemode.start();
+
+            return true;
+
+        } catch(NullPointerException e) {
+            Bukkit.getLogger().info("map.yml may be missing something");
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+    }
 
         return false;
 

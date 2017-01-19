@@ -18,6 +18,8 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.util.Vector;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -42,8 +44,8 @@ public class Parkour implements Gamemode {
     private final World world;
     private final MapYml mapYml;
 
-    private final Location startButton;
-    private final Location endButton;
+    private final Location startButton, endButton;
+    private final Material checkpointMat, backpointMat;
 
     private HashMap<UUID, ParkourPlayerTracker> playerTracker;
 
@@ -62,8 +64,11 @@ public class Parkour implements Gamemode {
         this.mapYml = mapYml;
         this.playerTracker = new HashMap<>();
 
-        startButton = MasochistGameManager.locationFromCoords(world, mapYml.startButton);
-        endButton = MasochistGameManager.locationFromCoords(world, mapYml.endButton);
+        startButton = MasochistGameManager.locationFromCoords(world, mapYml.coordinates("start_button"));
+        endButton = MasochistGameManager.locationFromCoords(world, mapYml.coordinates("end_button"));
+
+        checkpointMat = Material.getMaterial(mapYml.get("mat_checkpoint", "EYE_OF_ENDER"));
+        backpointMat = Material.getMaterial(mapYml.get("mat_backpoint", "ENDER_PEARL"));
 
     }
 
@@ -102,7 +107,7 @@ public class Parkour implements Gamemode {
 
         // Register all online players
         for(Player p : Bukkit.getServer().getOnlinePlayers())
-            playerTracker.put(p.getUniqueId(), (ParkourPlayerTracker) register(p));
+            playerTracker.put(p.getUniqueId(), register(p));
 
     }
 
@@ -110,10 +115,10 @@ public class Parkour implements Gamemode {
      * Register a player so that they can be tracked with flags and such.
      *
      * @param player    Player to be registered
-     * @return  A new ParkourPlayerTracker
+     * @return A new ParkourPlayerTracker
      */
     @Override
-    public PlayerTracker register(Player player) {
+    public ParkourPlayerTracker register(Player player) {
 
         Bukkit.getLogger().info("Tracking player " + player.getName());
         return new ParkourPlayerTracker(player.getUniqueId());
@@ -231,13 +236,13 @@ public class Parkour implements Gamemode {
         }
 
         // If the player is standing on a checkpoint material, save a checkpoint
-        if(block.getType() == mapYml.checkpointMat) {
+        if(block.getType() == checkpointMat) {
 
             playerTracker.get(uuid).saveCheckpoint(player.getLocation().getBlock().getLocation());
             player.sendMessage((double) playerTracker.get(uuid).getTime() / 1000.0 + " - Checkpoint saved.");
 
         // If the player is standing on a backpoint material, load the last checkpoint
-        } else if(block.getType() == mapYml.backpointMat) {
+        } else if(block.getType() == backpointMat) {
 
             player.teleport(playerTracker.get(uuid).getCheckpoint());
             player.setVelocity(new Vector(0.0, 0.0, 0.0));
@@ -253,8 +258,8 @@ public class Parkour implements Gamemode {
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
 
-        if(event.getEntityType().equals(EntityType.PLAYER) && event.getCause() !=
-                EntityDamageEvent.DamageCause.ENTITY_ATTACK)
+        if(event.getEntityType().equals(EntityType.PLAYER) && (event.getCause() == EntityDamageEvent.DamageCause.VOID ||
+                event.getCause() == EntityDamageEvent.DamageCause.FALL))
             event.setCancelled(true);
 
     }

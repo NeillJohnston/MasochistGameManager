@@ -61,7 +61,7 @@ public class MapExecutor implements CommandExecutor {
         } else if(strings.length >= 1) {
 
             // Load the world with a MapLoader
-            MapLoader mapLoader = new MapLoader(plugin, strings[0]);
+            MapLoader mapLoader = new MapLoader(plugin, strings[0], "0");
             mapLoader.loadMap();
 
             return true;
