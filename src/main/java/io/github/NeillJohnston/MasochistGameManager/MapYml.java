@@ -21,12 +21,6 @@ import java.util.HashMap;
  */
 public class MapYml {
 
-    /**
-     * Gamemode constants
-     */
-    public static final String GAMEMODE_PKR = "pkr";
-    public static final String GAMEMODE_PDM = "pdm";
-
     private final HashMap<String, Object> mapYml;
 
     // Basic settings

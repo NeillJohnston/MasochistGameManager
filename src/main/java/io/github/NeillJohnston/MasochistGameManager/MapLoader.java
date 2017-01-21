@@ -1,9 +1,5 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
-/**
- * Created by Neill on 1/8/2017.
- */
-
 import io.github.NeillJohnston.MasochistGameManager.gamemode.Gamemode;
 import io.github.NeillJohnston.MasochistGameManager.gamemode.Parkour;
 import org.apache.commons.io.FileUtils;
@@ -22,9 +18,18 @@ import static io.github.NeillJohnston.MasochistGameManager.MapExecutor.MAPS_PATH
 import static io.github.NeillJohnston.MasochistGameManager.MapExecutor.WORLD_PREFIX;
 
 /**
- * Convenience class to load a map.
+ * Load a map from a file in the maps directory.
+ *
+ * @author Neill Johnston
  */
 class MapLoader {
+
+    /**
+     * Gamemode possibilities, I have no better place to put these.
+     */
+    public static final String GAMEMODE_PKR = "pkr";
+    public static final String GAMEMODE_PDM = "pdm";
+    public static final String GAMEMODE_NONE = "none";
 
     private final MasochistGameManager plugin;
     private String name, id;
@@ -39,7 +44,7 @@ class MapLoader {
      * @param name      World name (in /maps)
      * @param id        World id
      */
-    MapLoader(MasochistGameManager plugin, String name, String id) {
+    public MapLoader(MasochistGameManager plugin, String name, String id) {
 
         this.plugin = plugin;
         this.name = name;
@@ -66,10 +71,11 @@ class MapLoader {
 
     /**
      * Load the new map and TP all online players to it.
+     * TODO: Allow tracking of which game players are in, only teleport the relevant players.
      *
-     * @return True if the map was successfully copied, false otherwise
+     * @return The newly created world
      */
-    boolean loadMap() {
+    public World loadMap() {
 
         try {
 
@@ -95,12 +101,12 @@ class MapLoader {
             Gamemode gamemode = null;
             switch(mapYml.gamemode) {
 
-                case MapYml.GAMEMODE_PKR:
+                case GAMEMODE_PKR:
                     gamemode = new Parkour(plugin, world, mapYml);
                     break;
 
-                case MapYml.GAMEMODE_PDM:
-                    gamemode = new Parkour(plugin, world, mapYml);
+                case GAMEMODE_NONE:
+                    gamemode = new Gamemode(plugin, world, mapYml);
                     break;
 
                 default:
@@ -113,7 +119,7 @@ class MapLoader {
             Bukkit.getServer().getPluginManager().registerEvents(gamemode, plugin);
             gamemode.start();
 
-            return true;
+            return world;
 
         } catch(NullPointerException e) {
             Bukkit.getLogger().info("map.yml may be missing something");
@@ -122,7 +128,7 @@ class MapLoader {
             e.printStackTrace();
     }
 
-        return false;
+        return null;
 
     }
 

@@ -6,17 +6,17 @@ description: Masochist PGM clonerino.
 load: startup
 commands:
   dingo:
-    description: Test, again.
+    description: Test command.
     usage: /dingo
     permission: MasochistGameManager.dingo
-    permission-message: Nope!
+    permission-message: If you don't have permission to use /dingo, you must have done something REALBAD.
   map:
     description: Switch map.
     usage: /map [name]
     permission: MasochistGameManager.map
-    permission-message: You don't have permission.
-  maplist:
-    description: List available maps.
-    usage: /maplist
-    permission: MasochistGameManager.map
-    permission-message: You don't have permission.
+    permission-message: You don't have permission to use /map.
+  game:
+    description: Create or destory games, or list active games.
+    usage: /game [create/destroy] [name]
+    permission: MasochistGameManager.game
+    permission-message: You don't have permission to use /game.

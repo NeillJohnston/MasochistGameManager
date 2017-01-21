@@ -8,9 +8,7 @@ import java.util.UUID;
 /**
  * @author Neill Johnston
  */
-public class ParkourPlayerTracker implements PlayerTracker {
-
-    private final UUID uuid;
+public class ParkourPlayerTracker extends PlayerTracker {
 
     // Flags...
     public boolean CHECKPOINT_FLAG;
@@ -25,7 +23,7 @@ public class ParkourPlayerTracker implements PlayerTracker {
      */
     public ParkourPlayerTracker(UUID uuid) {
 
-        this.uuid = uuid;
+        super(uuid);
 
         CHECKPOINT_FLAG = true;
 
