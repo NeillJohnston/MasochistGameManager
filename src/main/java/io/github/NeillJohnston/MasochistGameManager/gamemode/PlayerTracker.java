@@ -1,5 +1,11 @@
 package io.github.NeillJohnston.MasochistGameManager.gamemode;
 
+import io.github.NeillJohnston.MasochistGameManager.MasochistGame;
+import io.github.NeillJohnston.MasochistGameManager.MasochistGameManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -8,32 +14,45 @@ import java.util.UUID;
 public class PlayerTracker {
 
     final UUID uuid;
-    String game;
+    private String gameId;
 
-    public PlayerTracker(UUID uuid) {
+    public PlayerTracker(UUID uuid, String gameId) {
 
         this.uuid = uuid;
+        this.gameId = gameId;
 
     }
 
     /**
-     * Return this tracker's UUID.
+     * Set the game a player is in.
      *
-     * @return uuid
+     * @param gameId    New game id
      */
+    public void setGame(String gameId) {
 
-    /**
-     * Set which game a player is in.
-     *
-     * @param game  The game the player is in right now
-     */
-    public void setGame(String game) {}
+        this.gameId = gameId;
+        Bukkit.getServer().getPlayer(uuid).teleport(MasochistGameManager.games.get(gameId));
+
+    }
 
     /**
      * Get the game a player is in.
      *
      * @return game
      */
-    public String getGame() { return null; }
+    public String getGameId() {
+
+        return gameId;
+
+    }
+
+    /**
+     * Convenience method to get the Player behind the tracker.
+     */
+    public Player getPlayer() {
+
+        return Bukkit.getPlayer(uuid);
+
+    }
 
 }

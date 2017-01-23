@@ -1,1 +1,4 @@
 /game create name
+MasochistGameManager: executes the command (via GameExecutor)
+    MasochistGame: includes the World that the game plays in, and a Gamemode object that runs the show
+        Gamemode: runs the game

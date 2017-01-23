@@ -20,11 +20,12 @@ import java.util.HashMap;
 import java.util.UUID;
 
 /**
- * Parkour gamemode manager.
+ * ParkourGamemode gamemode manager.
  *
  * @author Neill Johnston
+ * @deprecated Deprecated along with Gamemode.
  */
-public class Parkour extends Gamemode {
+public class ParkourGamemode extends Gamemode {
 
     /**
      * Default commands to execute when loading a map
@@ -35,11 +36,6 @@ public class Parkour extends Gamemode {
             "gamerule doDaylightCycle false",
             "time set 6000",
     };
-
-    private final MasochistGameManager plugin;
-    private final World world;
-    private final MapYml mapYml;
-    private final Location spawn;
 
     private final Location startButton, endButton;
     private final Material checkpointMat, backpointMat;
@@ -54,14 +50,10 @@ public class Parkour extends Gamemode {
      * @param mapYml    Map's map.yml object
      * @throws NullPointerException When mapYml does not have all the required attributes
      */
-    public Parkour(MasochistGameManager plugin, World world, MapYml mapYml) throws NullPointerException {
+    public ParkourGamemode(MasochistGameManager plugin, World world, MapYml mapYml, String gameId) throws NullPointerException {
 
-        super(plugin, world, mapYml);
+        super(plugin, world, mapYml, gameId);
 
-        this.plugin = plugin;
-        this.world = world;
-        this.mapYml = mapYml;
-        this.spawn = MasochistGameManager.locationFromCoords(world, mapYml.coordinates("spawn"));
         this.trackers = new HashMap<>();
 
         startButton = MasochistGameManager.locationFromCoords(world, mapYml.coordinates("start_button"));
@@ -105,37 +97,20 @@ public class Parkour extends Gamemode {
             }
         }, 0L, 1L);
 
-        // Register all online players
-        for(Player p : Bukkit.getServer().getOnlinePlayers())
-            trackers.put(p.getUniqueId(), register(p));
-
     }
 
     /**
-     * Register a player so that they can be tracked with flags and such.
+     * Track a player, specifically for pkr
      *
-     * @param player    Player to be registered
-     * @return A new ParkourPlayerTracker
+     * @param player    Player to be added
+     * @return The new tracker
      */
     @Override
-    public ParkourPlayerTracker register(Player player) {
+    public ParkourPlayerTracker track(Player player) {
 
-        Bukkit.getLogger().info("Tracking player " + player.getName());
-        return new ParkourPlayerTracker(player.getUniqueId());
-
-    }
-
-    /**
-     * Register players when they join the server.
-     *
-     * @param event The player joining event
-     */
-    @Override
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-
-        Player player = event.getPlayer();
-        trackers.put(player.getUniqueId(), (ParkourPlayerTracker) register(player));
+        ParkourPlayerTracker tracker = new ParkourPlayerTracker(player.getUniqueId(), gameId);
+        trackers.put(player.getUniqueId(), tracker);
+        return tracker;
 
     }
 

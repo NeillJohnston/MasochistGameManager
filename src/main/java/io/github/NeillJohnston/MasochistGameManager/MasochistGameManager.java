@@ -1,6 +1,5 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
-import io.github.NeillJohnston.MasochistGameManager.gamemode.Gamemode;
 import io.github.NeillJohnston.MasochistGameManager.gamemode.PlayerTracker;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -8,14 +7,11 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * :D --> D:
@@ -25,9 +21,12 @@ import java.util.UUID;
 public class MasochistGameManager extends JavaPlugin implements Listener {
 
     public static Location spawn = null;
-    public static HashMap<String, World> games = null;
-    public static HashMap<UUID, PlayerTracker> trackers = null;
+    public static HashMap<String, MasochistGame> games = null;
+    public static HashMap<Player, PlayerTracker> trackers = null;
 
+    /**
+     * Initialize games/trackers HashMaps, add command executors.
+     */
     @Override
     public void onEnable() {
 
@@ -51,7 +50,7 @@ public class MasochistGameManager extends JavaPlugin implements Listener {
      * @param event
      */
     @EventHandler(priority = EventPriority.HIGH)
-    public void onJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
 
         // Get the player and TP to 0,0 at the lobby.
         final Player p = event.getPlayer();
@@ -63,19 +62,19 @@ public class MasochistGameManager extends JavaPlugin implements Listener {
         p.getInventory().clear();
 
         // Begin tracking the player.
-
+        trackers.put(p, new PlayerTracker(p.getUniqueId(), ""));
 
     }
 
     /**
-     * On player respawn, respawn at the spawn.
+     * When a player leaves, discard their tracker.
      *
      * @param event
      */
     @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
+    public void onPlayerQuit(PlayerQuitEvent event) {
 
-        event.setRespawnLocation(spawn);
+        trackers.remove(event.getPlayer().getUniqueId());
 
     }
 
@@ -88,6 +87,21 @@ public class MasochistGameManager extends JavaPlugin implements Listener {
     public static Location locationFromCoords(World world, double[] coords) {
 
         return new Location(world, coords[0], coords[1], coords[2]);
+
+    }
+
+    /**
+     * Convenience method, gets the MasochistGame that the player is in.
+     *
+     * @param player    The player to find
+     * @return The game the player is in, or null if the player is offline.
+     */
+    public static MasochistGame gameFromPlayer(Player player) {
+
+        if(player.isOnline())
+            return games.get(trackers.get(player).getGameId());
+        else
+            return null;
 
     }
 

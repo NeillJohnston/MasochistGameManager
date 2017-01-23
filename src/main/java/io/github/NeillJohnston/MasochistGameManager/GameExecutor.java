@@ -45,18 +45,18 @@ public class GameExecutor implements CommandExecutor {
         if(strings.length >= 2) {
 
             String operator = strings[0];
-            String name = strings[1];
+            String gameId = strings[1];
 
             // Switch through the different operators of /game: create, destroy
             switch(operator) {
 
                 case "create":
-                    // When a game is created, teleport relevant players to a new lobby world.
-                    MasochistGameManager.games.put(name, new MapLoader(plugin, LOBBY, name).loadMap());
+                    // When a game is created, add it to the list of games.
+                    MasochistGameManager.games.put(gameId, new MasochistGame(gameId));
                     return true;
 
                 case "destroy":
-                    return MasochistGameManager.games.remove(name) != null;
+                    return MasochistGameManager.games.remove(gameId) != null;
 
                 default:
                     commandSender.sendMessage("I don't recognize that command. /help game for more info.");

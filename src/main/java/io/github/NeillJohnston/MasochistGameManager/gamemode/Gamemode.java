@@ -1,29 +1,35 @@
 package io.github.NeillJohnston.MasochistGameManager.gamemode;
 
 import io.github.NeillJohnston.MasochistGameManager.MapYml;
+import io.github.NeillJohnston.MasochistGameManager.MasochistGame;
 import io.github.NeillJohnston.MasochistGameManager.MasochistGameManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * Basic specification for a gamemode manager.
  * Would have been called "GamemodeManager" but that's annoyingly long.
+ *
+ * @deprecated Yep! Already. Removing this shit in favor of MasochistGame, which will include basically a copy of
+ * all of this in itself.
  */
 public class Gamemode implements Listener {
 
-    private final MasochistGameManager plugin;
-    private final World world;
-    private final MapYml mapYml;
-    private final Location spawn;
+    final MasochistGameManager plugin;
+    final MasochistGame game;
+    final World world;
+    final MapYml mapYml;
+    final String gameId;
+    final Location spawn;
 
-    private HashMap<UUID, PlayerTracker> trackers;
+    private HashMap<Player, PlayerTracker> trackers;
 
     /**
      * Initialize the manager with required attributes from map.yml.
@@ -31,13 +37,16 @@ public class Gamemode implements Listener {
      * @param plugin    Bukkit plugin instance
      * @param world     Current world that the pkr game is being run in
      * @param mapYml    Map's map.yml object
+     * @param id        The gameId of the game
      * @throws NullPointerException When mapYml does not have all the required attributes
      */
-    public Gamemode(MasochistGameManager plugin, World world, MapYml mapYml) throws NullPointerException {
+    public Gamemode(MasochistGameManager plugin, MasochistGame game, World world, MapYml mapYml, String id) throws NullPointerException {
 
         this.plugin = plugin;
+        this.game = game;
         this.world = world;
         this.mapYml = mapYml;
+        this.gameId = id;
         this.trackers = new HashMap<>();
 
         spawn = MasochistGameManager.locationFromCoords(world, mapYml.coordinates("spawn"));
@@ -49,33 +58,45 @@ public class Gamemode implements Listener {
      */
     public void start() {
 
-        //
+        Bukkit.getLogger().info("Started gamemode.");
 
     }
 
     /**
-     * Get a tracker.
+     * Teleport a player to this game, and issue a tracker.
      *
-     * @param player    Player to be registered
-     * @return A new "generic" player tracker.
+     * @param player    Player to be added
      */
-    public PlayerTracker register(Player player) {
+    public void add(Player player) {
 
-        PlayerTracker tracker = new PlayerTracker(player.getUniqueId());
-        trackers.put(player.getUniqueId(), tracker);
+        player.teleport(spawn);
+        track(player);
+
+    }
+
+    /**
+     * Begin tracking a player for this game.
+     *
+     * @param player    Player to be added
+     * @return A new tracker for the player
+     */
+    public PlayerTracker track(Player player) {
+
+        PlayerTracker tracker = new PlayerTracker(player.getUniqueId(), gameId);
+        trackers.put(player, tracker);
         return tracker;
 
     }
 
     /**
-     * Add a tracker on player join.
+     * On player respawn, respawn at the spawn.
      *
-     * @param event The player joining event
+     * @param event
      */
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
 
-        MasochistGameManager.trackers.put(event.getPlayer().getUniqueId(), register(event.getPlayer()));
+        event.setRespawnLocation(spawn);
 
     }
 

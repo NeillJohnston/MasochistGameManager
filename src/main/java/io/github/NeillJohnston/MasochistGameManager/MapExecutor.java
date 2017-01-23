@@ -1,21 +1,9 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
-import io.github.NeillJohnston.MasochistGameManager.gamemode.Gamemode;
-import io.github.NeillJohnston.MasochistGameManager.gamemode.Parkour;
-import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.WorldCreator;
-import org.bukkit.entity.Player;
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
 
 /**
  * /map [name] command: Switch the server map to the specified map
@@ -57,6 +45,7 @@ public class MapExecutor implements CommandExecutor {
         if(strings.length == 0) {
 
             Bukkit.getServer().dispatchCommand(commandSender, "maplist");
+            return true;
 
         } else if(strings.length >= 1) {
 

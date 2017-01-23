@@ -1,13 +1,12 @@
 package io.github.NeillJohnston.MasochistGameManager;
 
 import io.github.NeillJohnston.MasochistGameManager.gamemode.Gamemode;
-import io.github.NeillJohnston.MasochistGameManager.gamemode.Parkour;
+import io.github.NeillJohnston.MasochistGameManager.gamemode.ParkourGamemode;
+import io.github.NeillJohnston.MasochistGameManager.gamemode.PlayerTracker;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,8 +30,7 @@ class MapLoader {
     public static final String GAMEMODE_PDM = "pdm";
     public static final String GAMEMODE_NONE = "none";
 
-    private final MasochistGameManager plugin;
-    private String name, id;
+    private final String gameId;
 
     private File sourcePath, targetPath, sourceYml;
     private MapYml mapYml;
@@ -42,17 +40,15 @@ class MapLoader {
      *
      * @param plugin    Instance of the Bukkit plugin
      * @param name      World name (in /maps)
-     * @param id        World id
+     * @param gameId    World id
      */
-    public MapLoader(MasochistGameManager plugin, String name, String id) {
+    public MapLoader(String name, String gameId) {
 
-        this.plugin = plugin;
-        this.name = name;
-        this.id = WORLD_PREFIX + id;
+        this.gameId = gameId;
 
         // Create the from- and to- paths for the world
         sourcePath = new File(MAPS_PATH + "\\" + name);
-        targetPath = new File(".\\" + this.id);
+        targetPath = new File(".\\" + this.gameId);
         sourceYml = new File(MAPS_PATH + "\\" + name + "\\map.yml");
 
         // Load map options from map.yml
@@ -71,7 +67,6 @@ class MapLoader {
 
     /**
      * Load the new map and TP all online players to it.
-     * TODO: Allow tracking of which game players are in, only teleport the relevant players.
      *
      * @return The newly created world
      */
@@ -80,43 +75,43 @@ class MapLoader {
         try {
 
             // TP all players to the lobby so that we can safely unload the world
-            for(Player p : Bukkit.getServer().getOnlinePlayers())
-                p.teleport(Bukkit.getServer().getWorld(LOBBY_WORLD).getSpawnLocation());
+            for(PlayerTracker t : MasochistGameManager.trackers.values())
+                if(t.getGameId().equals(gameId))
+                    t.getPlayer().teleport(Bukkit.getServer().getWorld(LOBBY_WORLD).getSpawnLocation());
 
             // Copy world files over
             FileUtils.copyDirectory(sourcePath, targetPath);
             Bukkit.getLogger().info("Copied world.");
 
             // Create a temp world, unload it immediately - this is done solely to get a usable World object
-            World temp = new WorldCreator(id).createWorld();
+            World temp = new WorldCreator(gameId).createWorld();
             Bukkit.getServer().unloadWorld(temp, false);
 
             // Re-load the temp world, now from the new files - also set world spawn
-            World world = Bukkit.getServer().createWorld(new WorldCreator(id));
-            MasochistGameManager.spawn = MasochistGameManager.locationFromCoords(world, mapYml.spawn);
-            for (Player p : Bukkit.getServer().getOnlinePlayers())
-                p.teleport(MasochistGameManager.spawn);
+            World world = Bukkit.getServer().createWorld(new WorldCreator(gameId));
+            for(PlayerTracker t : MasochistGameManager.trackers.values())
+                if(t.getGameId().equals(gameId))
+                    t.getPlayer().teleport(MasochistGameManager.locationFromCoords(world, mapYml.spawn));
 
             // Create a Gamemode based on the gamemode in map.yml
             Gamemode gamemode = null;
             switch(mapYml.gamemode) {
 
                 case GAMEMODE_PKR:
-                    gamemode = new Parkour(plugin, world, mapYml);
+                    gamemode = new ParkourGamemode(plugin, world, mapYml, gameId);
                     break;
 
                 case GAMEMODE_NONE:
-                    gamemode = new Gamemode(plugin, world, mapYml);
+                    gamemode = new Gamemode(plugin, world, mapYml, gameId);
                     break;
 
                 default:
-                    gamemode = new Parkour(plugin, world, mapYml);
+                    gamemode = new ParkourGamemode(plugin, world, mapYml, gameId);
                     break;
 
             }
 
             // Register and start the Gamemode
-            Bukkit.getServer().getPluginManager().registerEvents(gamemode, plugin);
             gamemode.start();
 
             return world;
@@ -126,7 +121,7 @@ class MapLoader {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-    }
+        }
 
         return null;
 

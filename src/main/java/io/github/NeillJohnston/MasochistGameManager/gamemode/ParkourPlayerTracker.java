@@ -21,9 +21,9 @@ public class ParkourPlayerTracker extends PlayerTracker {
      *
      * @param uuid  Player UUID
      */
-    public ParkourPlayerTracker(UUID uuid) {
+    public ParkourPlayerTracker(UUID uuid, String gameId) {
 
-        super(uuid);
+        super(uuid, gameId);
 
         CHECKPOINT_FLAG = true;
 
